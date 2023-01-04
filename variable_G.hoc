@@ -1,0 +1,152 @@
+
+objref somaVm, somaT, somaD1, somaD2,  fsoma, fsomaSum
+
+objref somaG_NA12,somaG_IA,somaG_IH,somaG_KDR,somaG_SK,somaG_CAV13
+
+
+proc variable_NA(){
+
+
+// vectors for  V, t and derivatives 	
+
+somaVm = new Vector()
+somaT = new Vector()
+somaD1 = new Vector()
+somaD2 = new Vector()
+
+//  vectors for conductances
+somaG_NA12= new Vector()
+somaG_IA= new Vector()
+somaG_IH= new Vector()
+somaG_KDR= new Vector()
+somaG_SK =new Vector()
+somaG_CAV13 = new Vector()
+
+fsomaSum = new File()
+
+fsoma = new File()
+
+// fISI = new File()
+
+chdir("data")
+strdef somaSum
+sprint (somaSum, "%s%s", cellName, "_Full_morpho_data.csv")
+fsomaSum.wopen(somaSum)
+fsomaSum.printf("%s\t %s\t %s\t %s\t %s\t %s\t %s\t %s\t %s\t %s\t% s\t", "Parameter", "Na_nABD",  "NA_ABD", "iCA_ABD", "AP threshold", "AP amplitude", "AP half-width", "IS dv2", "SD dv2", "ISI", "Freq")		
+fsomaSum.close()
+
+
+
+
+			forsec  all_biophys { 
+			gbar_Na12 = 50
+			gbar_kdrDA= 150
+			gbar_kaDa= 100
+			gbar_CAV13 = 1
+			gbar_kca=0.125
+			gbar_Ih= 1			
+			
+			}
+					
+//Loop changing AIS na/K
+		
+		for k=1, 11{
+		//loop changing gbar na in the ABD
+			
+			
+				
+				forsec all_ABD { 
+					gbar_Na12 =40+k*10
+					gbar_kdrDA= 150
+					gbar_kaDa= 100 }
+
+		for l=1, 11 {
+
+			forsec all_ABD{
+
+			gbar_CAV13=0.8+l*0.2 }
+			//loop changing gbar-Cav13 in the ABD
+				
+
+				 soma.gbar_Na12 = 50
+			
+				 soma.gbar_kdrDA= 100
+				 
+				 soma.gbar_kaDasoma= 150
+				  soma.gbar_CAV13 = 1
+				  soma.gbar_Ih=1
+				  gbar_kca=0.125
+				 
+				 
+				 
+			
+								 
+				axon.gbar_Na12=400
+				axon.gbar_kdrDA=400
+
+				AIS.gbar_Na12 = 4000
+				AIS.gbar_kdrDA = 4000
+			
+		
+		
+		print "AIS Na+ density is ", AIS.gbar_Na12
+		print "soma Na+ density Na_ABD is " , soma.gbar_Na12
+		print "soma Ih density is " , soma.gbar_Ih
+		print "ABD Ica density is " , axonstart.gbar_CAV13
+		print "ABD Ina density is "  , axonstart.gbar_Na12
+		print "ABD gbar_kdrDA density is "  , axonstart.gbar_kdrDA
+
+
+		
+		dt=0.01
+		
+		init(v_init)
+		
+
+		//filling vectors with variables recorded in  the soma (need te be done before run)
+
+		soma somaT.record(&t)	
+		soma somaVm.record(&v(0.5))
+		
+		soma somaG_NA12.record(&soma.g_Na12(0.5)) 
+
+		 soma somaG_IA.record(&soma.g_kaDasoma(0.5)) 
+		soma somaG_KDR.record(&soma.g_kdrDA(0.5)) 
+		soma somaG_SK.record(&soma.g_kca(0.5)) 
+		soma somaG_CAV13.record(&soma.g_CAV13(0.5)) 
+		soma somaG_IH.record(&soma.g_Ih(0.5))
+		
+		
+		
+	
+		run()
+		
+		// calculatin derivatives of Vm
+
+		somaD1.deriv(somaVm, dt)
+		somaD2.deriv(somaD1, dt)
+		
+
+
+
+
+
+	freqmeter()
+		
+print "controle bug1"			
+		}
+print "controle bug2"	
+	
+		}	
+		
+		
+
+
+	print "controle bug3"
+quit()	
+			
+}		
+		
+
+
+	

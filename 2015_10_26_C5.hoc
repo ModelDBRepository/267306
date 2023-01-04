@@ -1,0 +1,261 @@
+proc celldef() {
+  topol()
+  subsets()
+  geom()
+  biophys()
+  // geom_nseg()
+}
+
+create soma, ABD[3], nABD[2], interD[2], nABD_sec[4], interD_sec[2], axoD
+create axonstart, axoD_sec[2], AIS, axon
+
+proc topol() { local i
+  connect ABD(0), soma(0)
+  for i = 1, 2 connect ABD[i](0), ABD[i-1](1)
+  for i = 0, 1 connect nABD[i](0), soma(1)
+  for i = 0, 1 connect interD[i](0), ABD[i](1)
+  for i = 0, 1 connect nABD_sec[i](0), nABD(1)
+  for i = 2, 3 connect nABD_sec[i](0), nABD_sec(1)
+  for i = 0, 1 connect interD_sec[i](0), interD(1)
+  connect axoD(0), ABD[2](1)
+  connect axonstart(0), ABD[2](1)
+  for i = 0, 1 connect axoD_sec[i](0), axoD(1)
+  connect AIS(0), axonstart(1)
+  connect axon(0), AIS(1)
+  basic_shape()
+}
+proc shape3d_1() {
+  soma {pt3dclear()
+	pt3dadd(0, 0, 0, 1)
+	pt3dadd(100, 0, 0, 1)
+  }
+  ABD {pt3dclear()
+	pt3dadd(0, 0, 0, 1)
+	pt3dadd(0, 100, 0, 1)
+  }
+  nABD {pt3dclear()
+	pt3dadd(100, 0, 0, 1)
+	pt3dadd(100, -100, 0, 1)
+  }
+  nABD[1] {pt3dclear()
+	pt3dadd(100, 0, 0, 1)
+	pt3dadd(200, 0, 0, 1)
+  }
+  interD {pt3dclear()
+	pt3dadd(0, 100, 0, 1)
+	pt3dadd(-88.8218, 145.942, 0, 1)
+  }
+  ABD[1] {pt3dclear()
+	pt3dadd(0, 100, 0, 1)
+	pt3dadd(44.7214, 189.443, 0, 1)
+  }
+  nABD_sec {pt3dclear()
+	pt3dadd(100, -100, 0, 1)
+	pt3dadd(170.711, -170.711, 0, 1)
+  }
+  nABD_sec[1] {pt3dclear()
+	pt3dadd(100, -100, 0, 1)
+	pt3dadd(30.4978, -171.899, 0, 1)
+  }
+  interD_sec {pt3dclear()
+	pt3dadd(-88.8218, 145.942, 0, 1)
+	pt3dadd(-188.822, 145.942, 0, 1)
+  }
+  interD_sec[1] {pt3dclear()
+	pt3dadd(-88.8218, 145.942, 0, 1)
+	pt3dadd(-88.8218, 245.942, 0, 1)
+  }
+  interD[1] {pt3dclear()
+	pt3dadd(44.7214, 189.443, 0, 1)
+	pt3dadd(-24.7808, 261.342, 0, 1)
+  }
+  ABD[2] {pt3dclear()
+	pt3dadd(44.7214, 189.443, 0, 1)
+	pt3dadd(115.432, 260.153, 0, 1)
+  }
+  nABD_sec[2] {pt3dclear()
+	pt3dadd(170.711, -170.711, 0, 1)
+	pt3dadd(241.421, -241.421, 0, 1)
+  }
+  nABD_sec[3] {pt3dclear()
+	pt3dadd(170.711, -170.711, 0, 1)
+	pt3dadd(139.088, -265.579, 0, 1)
+  }
+  axoD {pt3dclear()
+	pt3dadd(115.432, 260.153, 0, 1)
+	pt3dadd(160.153, 349.596, 0, 1)
+  }
+  axonstart {pt3dclear()
+	pt3dadd(115.432, 260.153, 0, 1)
+	pt3dadd(204.875, 215.432, 0, 1)
+  }
+  axoD_sec {pt3dclear()
+	pt3dadd(160.153, 349.596, 0, 1)
+	pt3dadd(255.022, 381.219, 0, 1)
+  }
+  axoD_sec[1] {pt3dclear()
+	pt3dadd(160.153, 349.596, 0, 1)
+	pt3dadd(160.153, 449.596, 0, 1)
+  }
+  AIS {pt3dclear()
+	pt3dadd(204.875, 215.432, 0, 1)
+	pt3dadd(294.317, 170.711, 0, 1)
+  }
+  axon {pt3dclear()
+	pt3dadd(294.317, 170.711, 0, 1)
+	pt3dadd(383.76, 125.989, 0, 1)
+  }
+}
+proc basic_shape() {
+  shape3d_1()
+}
+
+objref all, all_biophys, all_ABD
+proc subsets() { local i
+  objref all, all_biophys, all_ABD
+  all = new SectionList()
+    soma all.append()
+    for i=0, 2 ABD[i] all.append()
+    for i=0, 1 nABD[i] all.append()
+    for i=0, 1 interD[i] all.append()
+    for i=0, 3 nABD_sec[i] all.append()
+    for i=0, 1 interD_sec[i] all.append()
+    axoD all.append()
+    axonstart all.append()
+    for i=0, 1 axoD_sec[i] all.append()
+    AIS all.append()
+    axon all.append()
+
+  all_biophys = new SectionList()
+    for i=0, 2 ABD[i] all_biophys.append()
+    for i=0, 1 nABD[i] all_biophys.append()
+    for i=0, 1 interD[i] all_biophys.append()
+    for i=0, 3 nABD_sec[i] all_biophys.append()
+    for i=0, 1 interD_sec[i] all_biophys.append()
+    axoD all_biophys.append()
+    axonstart all_biophys.append()
+    for i=0, 1 axoD_sec[i] all_biophys.append()
+
+      all_ABD=new SectionList()
+    for i=0, 2 ABD[i] all_ABD.append()
+    for i=0, 1 interD[i] all_ABD.append()
+    for i=0, 1 interD_sec[i] all_ABD.append()
+    axoD all_ABD.append()
+    axonstart all_ABD.append()
+    for i=0, 1 axoD_sec[i] all_ABD.append()
+
+
+}
+proc geom() {
+ 
+  soma {  L = 48     }
+  ABD {  L = 19     }
+  nABD {  L = 13     }
+  nABD[1] {  L = 142     }
+  interD {  L = 43     }
+  ABD[1] {  L = 27     }
+  nABD_sec {  L = 24     }
+  nABD_sec[1] {  L = 265     }
+  interD_sec {  L = 37     }
+  interD_sec[1] {  L = 14     }
+  interD[1] {  L = 57     }
+  ABD[2] {  L = 12     }
+  nABD_sec[2] {  L = 29     }
+  nABD_sec[3] {  L = 25     }
+  axoD {  L = 8     }
+  axonstart {  L = 17.3     }
+  axoD_sec {  L = 238     }
+  axoD_sec[1] {  L = 149     }
+  AIS {  L = 41.4     }
+  axon {  L = 800     }
+
+// nseg definition has to be launched before diam definition for tapering to be taken into account
+
+  forsec all { nseg = int((L/(0.1*lambda_f(1000))+.999)/2)*2 + 1  }
+  
+   ABD {  diam(0:1) = 3.4:2  }
+  ABD[1] {     diam(0:1) = 2:1.6  }
+  ABD[2] {     diam(0:1) = 1.6:1.2  }
+  AIS {       diam(0:1) = 1:0.5  }
+  axoD {      diam = 1.3  }
+  axoD_sec {   diam(0:1) = 0.9:0.7 }
+  axoD_sec[1] {  diam(0:1) = 0.9:0.7 }
+  axon {    diam = 0.5  }
+  axonstart {   diam(0:1) = 1.1:1  }
+  interD {  diam(0:1) = 1.5:1  }
+  interD_sec {     diam = 0.8  }
+  interD_sec[1] {     diam = 0.8 }
+  interD[1] {     diam(0:1) = 1.3:1  }
+  nABD {  diam(0:1) = 2.2:1  }
+  nABD_sec {     diam(0:1) = 2:0.8  }
+  nABD_sec[1] {      diam(0:1) = 2:1.5  }
+  nABD_sec[2] {     diam = 0.8 }
+  nABD_sec[3] {     diam = 0.8  }
+  nABD[1] {      diam(0:1) = 4.8:4  }
+soma {  diam = 10  }
+}
+  
+  
+
+proc biophys() {
+  forsec all {
+    Ra = 150
+    cm = 0.75
+    insert pasnts
+      g_pasnts = 1e-05
+      e_pasnts = -50
+  }
+  forsec all_biophys {
+    insert CAV13
+      gbar_CAV13 = 1.25
+      iLCa_CAV13 = 0
+    insert Ih
+      gbar_Ih = 3
+    insert kaDa
+      gbar_kaDa = 50
+      taurecov_kaDa = 25
+    insert kdrDA
+      gbar_kdrDA = 150
+    insert Na12
+      gbar_Na12 = 75
+    insert cad
+    insert kca
+      gbar_kca = 0.1
+        
+  }
+  soma {
+    insert CAV13
+      gbar_CAV13 = 1.25
+      iLCa_CAV13 = 0
+    insert Ih
+      gbar_Ih = 3
+    insert kaDasoma
+      gbar_kaDasoma = 150
+      taurecov_kaDasoma = 25
+    insert kdrDA
+      gbar_kdrDA = 150
+    insert Na12
+      gbar_Na12 = 75
+    insert cad
+    insert kca
+      gbar_kca = 0.1
+        
+  }
+  AIS {
+    insert kdrDA
+      gbar_kdrDA = 4000
+    insert Na12
+      gbar_Na12 = 4000
+  }
+  axon {
+    insert kdrDA
+      gbar_kdrDA = 400
+    insert Na12
+      gbar_Na12 = 400
+  }
+    forsec all { ek=-90
+ena=60  }
+}
+access soma
+
+celldef()

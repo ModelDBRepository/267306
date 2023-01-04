@@ -1,0 +1,140 @@
+// frequence meter
+objref rec, nil , inter_spike,  spike_indx, somaVm_late, somaD1_late, somaD2_late, somaT_late 
+
+objref somaG_NA12_late,somaG_IA_late,somaG_IH_late,somaG_KDR_late,somaG_SK_late,somaG_CAV13_late
+
+spike_indx = new Vector()
+
+
+
+inter_spike = new Vector() // a vector to store spike time intervals
+ 
+soma rec = new NetCon(&v(0.5), nil) // create a netcon that watch the soma to reach a threshold 
+rec.threshold = -25  // record time indexes when V crosses threshold
+rec.record(spike_indx)
+nb_spikes_rejected = 10// ignore the first 10-1 = 9 interspike intervals
+nbr=nb_spikes_rejected 
+nb_spikes_recorded= 4// nb +1  of ISI from which instantaneous  frequency will be calculated 
+nbrec=nb_spikes_recorded
+nb_min = nb_spikes_rejected + nb_spikes_recorded  // ignore recordings with fewer spikes than this sum (10)
+
+
+proc freqmeter () {local t1, t2, t3
+   mean_freq = 0
+    nbspikes = spike_indx.size() // calculate the number of spikes
+  
+
+print "spike times are  ",  spike_indx.printf // 
+if (nbspikes < nb_min) {
+	continue
+}
+ t1 = spike_indx.x[nbr] // nbr th spike time
+ t2 = spike_indx.x[nbr+1] // nbr+1 th spike time 
+ t3=t2-t1 
+ print "t1 et t2 and delta_t  " , t1 ," " , t2, " ", t3 
+
+ // calculating the time range to extract only one action potential
+
+ index1 = somaT.indwhere(">=", t1+0.5*t3)
+ index2 = somaT.indwhere(">=", t2+0.5*t3)
+ 
+ print "index1 is ", index1
+ print "index2 is ", index2
+ 
+ if (nbspikes >= nb_min) {
+
+	 somaVm_late = new Vector()
+somaD1_late = new Vector()
+somaD2_late = new Vector()
+somaT_late = new Vector()
+
+
+// CREATINg vectors for extraction of conductances during one action potential
+
+somaG_NA12_late= new Vector()
+somaG_IA_late= new Vector()
+somaG_IH_late= new Vector()
+somaG_KDR_late= new Vector()
+somaG_SK_late =new Vector()
+somaG_CAV13_late = new Vector()
+
+	 
+ inter_spike.copy(spike_indx,nb_spikes_rejected,nb_min) // copy the vector to a new vector starting by the n th intervals
+ sub_nbspikes=inter_spike.size() // nb of spikes in the sub sample
+ inter_spike.deriv  // calculate spike time intervals (ISI)
+// inter_spike.printf 
+moy = inter_spike.mean() // calculate mean ISI
+mean_freq= 1/moy *1000 // mean firing frequency 
+// sd = inter_spike.stdev() // Calculate ISI STANDARD DEVIATION 
+
+
+// print "nb of spikes is  ",sub_nbspikes, "mean ISI is " , moy, "sd is " , sd, "sem is ", sem
+ print " mean ISI is ", moy
+
+somaVm_late.copy(somaVm,index1,index2) // copy the spike of interest from the different compartment
+somaD1_late.copy(somaD1,index1,index2)
+somaD2_late.copy(somaD2,index1,index2)
+somaT_late.copy(somaT,index1,index2)
+
+//record conductances during the extracted spike
+
+somaG_NA12_late.copy(somaG_NA12, index1, index2)
+somaG_IA_late.copy(somaG_IA, index1, index2)
+somaG_IH_late.copy(somaG_IH, index1, index2)
+somaG_KDR_late.copy(somaG_KDR, index1, index2)
+somaG_CAV13_late.copy(somaG_CAV13, index1, index2)
+somaG_SK_late.copy(somaG_SK, index1, index2)
+
+
+
+
+
+
+//§somaG_NA12_late.printf("%8.4f\n")
+
+print "bug record"
+
+strdef somaName
+sprint (somaName, "%s%s%d%s%d%s%d%s", cellName, "_soma_", soma.gbar_Na12, "_NA_ABD_", axonstart.gbar_Na12,"ICA_ABD", axonstart.gbar_CAV13*100, ".csv")
+print "soma file is ", somaName
+
+		
+
+
+		soma_analysis()
+		fsomaSum.aopen(somaSum)
+				fsomaSum.printf("\n %s\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t %g\t %g\t", cellName, soma.gbar_Na12, axonstart.gbar_Na12, axonstart.gbar_CAV13, threshold, AP, HW, peakIS, peakSD, moy, mean_freq)
+			fsomaSum.close()
+			
+			// fISI.aopen(ISISum) 
+			// fISI.printf("\n %s\t%g\t%g\t%g\t", cellName, soma.gbar_Na12, AIS.gbar_Na12, moy)
+			// fISI.close()
+
+		
+		
+
+
+chdir("data")
+		fsoma.wopen(somaName)
+		fsoma.printf("%s\t %s\t %s\t %s\t %s\t %s\t %s\t %s\t %s\t %s\t", "time", "Vm", "der_1", "der_2", "g_Na12", "gbar_kdrDA", "gbar_kaDa", "gbar_CAV13","g_kca", "g_Ih")
+
+
+		
+			for n=0, somaVm_late.size()-1{
+
+					fsoma.printf("\n %g\t %g\t %g\t %g\t %g\t %g\t %g\t %g\t %g\t %g\t", somaT_late.x(n), somaVm_late.x(n), somaD1_late.x(n), somaD2_late.x(n), somaG_NA12_late.x(n), somaG_KDR_late.x(n),somaG_IA_late.x(n),somaG_CAV13_late.x(n), somaG_SK_late.x(n),somaG_IH_late.x(n))
+					
+				} 
+			fsoma.close()
+			
+		
+print "controle spike extract1" 
+
+
+} else {
+	print "not enough spikes, increase duration of simulation " 
+	
+	continue
+}
+print "controle spike extract2" 
+}
